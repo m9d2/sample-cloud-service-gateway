@@ -1,47 +1,66 @@
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
 spring:
   main:
     allow-bean-definition-overriding: true
   application:
     name: sample-cloud-service-gateway
   profiles:
-    active: dev
+    default: dev
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true
       routes:
-        - id: sample-cloud-service-base
+        - id: base-service
           uri: lb://sample-cloud-service-base
           predicates:
-            - Path=/service-base/**
-        - id: sample-cloud-service-order
+            - Path=/api/base/**
+          filters:
+            - RewritePath=/api/base/(?<segment>.*), /${segment}
+        - id: order-service
           uri: lb://sample-cloud-service-order
           predicates:
-            - Path=/service-order/**
+            - Path=/api/order/**
           filters:
-            - name: RequestRateLimiter
-              args:
-                key-resolver: '#{@ipKeyResolver}'
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 3
-            - name: RequestRateLimiter
-              args:
-                key-resolver: '#{@pathKeyResolver}'
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 3
+            - RewritePath=/api/order/(?<segment>.*), /${segment}
+#          filters:
+#            - name: RequestRateLimiter
+#              args:
+#                key-resolver: '#{@ipKeyResolver}'
+#                redis-rate-limiter.replenishRate: 1
+#                redis-rate-limiter.burstCapacity: 1
+#                fallbackUri: forward:/rate-limit-response
+
+#            - name: RequestRateLimiter
+#              args:
+#                key-resolver: '#{@pathKeyResolver}'
+#                redis-rate-limiter.replenishRate: 60
+#                redis-rate-limiter.burstCapacity: 60
+
     nacos:
       discovery:
         metadata:
           management:
             context-path: ${server.servlet.context-path}/actuator
       config:
-        shared-dataids: sample-cloud-service-gateway.yml,common.yml
-        refreshable-dataids: sample-cloud-service-gateway.yml,common.yml
+        shared-configs: sample-cloud-service-gateway.yml,common.yml
 
 ---
 server:
-  port: 3002
+  port: 2200
 
 spring:
-  profiles: dev
+  config:
+    activate:
+      on-profile: dev
   cloud:
     nacos:
       config:
@@ -52,47 +71,14 @@ spring:
         server-addr: 127.0.0.1:8848
         cluster-name: xa
         namespace: 3895580d-cf4d-4b39-aa0d-a54126048447
-  redis:
-    host: 127.0.0.1
-    port: 6379
-    timeout: 6000ms  # 连接超时时长（毫秒）
-    jedis:
-      pool:
-        max-active: 1000  # 连接池最大连接数（使用负值表示没有限制）
-        max-wait: -1ms    # 连接池最大阻塞等待时间（使用负值表示没有限制）
-        max-idle: 10      # 连接池中的最大空闲连接
-        min-idle: 5       # 连接池中的最小空闲连接
-
----
-server:
-  port: 3001
-
-spring:
-  profiles: test
-  cloud:
-    nacos:
-      config:
-        server-addr: 127.0.0.1:8848
-        file-extension: yml
-        namespace: 3895580d-cf4d-4b39-aa0d-a54126048447
-      discovery:
-        server-addr: 127.0.0.1:8848
-        cluster-name: xa
-        namespace: 3895580d-cf4d-4b39-aa0d-a54126048447
-
----
-server:
-  port: 3001
-
-spring:
-  profiles: prod
-  cloud:
-    nacos:
-      config:
-        server-addr: 127.0.0.1:8848
-        file-extension: yml
-        namespace: 3895580d-cf4d-4b39-aa0d-a54126048447
-      discovery:
-        server-addr: 127.0.0.1:8848
-        cluster-name: xa
-        namespace: 3895580d-cf4d-4b39-aa0d-a54126048447
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      timeout: 6000ms  # 连接超时时长（毫秒）
+      jedis:
+        pool:
+          max-active: 1000  # 连接池最大连接数（使用负值表示没有限制）
+          max-wait: -1ms    # 连接池最大阻塞等待时间（使用负值表示没有限制）
+          max-idle: 10      # 连接池中的最大空闲连接
+          min-idle: 5       # 连接池中的最小空闲连接

@@ -5,11 +5,11 @@
     <parent>
         <groupId>sample.cloud</groupId>
         <artifactId>sample-cloud</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>sample-cloud-service-gateway</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>sample-cloud-service-gateway</name>
     <packaging>pom</packaging>
 
@@ -18,8 +18,6 @@
     </properties>
 
     <modules>
-        <module>gateway-api-module</module>
-        <module>gateway-domain-module</module>
         <module>gateway-web-module</module>
     </modules>
 
@@ -27,13 +25,8 @@
         <dependencies>
             <dependency>
                 <groupId>sample.cloud</groupId>
-                <artifactId>gateway-api-module</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>sample.cloud</groupId>
-                <artifactId>gateway-domain-module</artifactId>
-                <version>${project.version}</version>
+                <artifactId>sample-cloud-common</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

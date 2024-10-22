@@ -1,4 +1,4 @@
-package sample.cloud.gateway.web;
+package sample.cloud.gateway.web.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -16,7 +16,7 @@ public class SampleFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        log.info("sample filter...");
+        log.info("Request uri: {}", exchange.getRequest().getURI());
         return chain.filter(exchange);
     }
 
